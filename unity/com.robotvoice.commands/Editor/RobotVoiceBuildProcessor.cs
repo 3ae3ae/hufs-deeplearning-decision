@@ -14,7 +14,7 @@ public class RobotVoiceBuildProcessor : IPostprocessBuildWithReport
             target != BuildTarget.StandaloneOSX) return;
         var package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(VoiceCommands).Assembly);
         if (package == null || !Directory.Exists(Path.Combine(package.resolvedPath, "AI~")))
-            throw new BuildFailedException("음성 AI 파일이 없습니다. 생성한 tarball로 패키지를 설치하세요.");
+            throw new BuildFailedException("음성 AI 파일이 없습니다. 생성한 tarball로 패키지를 설치하십시오.");
 
         string output = report.summary.outputPath;
         string assets = target == BuildTarget.StandaloneOSX

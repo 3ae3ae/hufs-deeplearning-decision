@@ -59,7 +59,7 @@ def main():
                       disable_update=True, disable_pbar=True, disable_log=True)
     device = next(model.model.parameters()).device.type
     if device != args.device:
-        parser.error(f"요청한 {args.device} 대신 {device}로 모델이 로드되었습니다. --device cpu를 사용하세요.")
+        parser.error(f"요청한 {args.device} 대신 {device}로 모델이 로드되었습니다. --device cpu를 사용하십시오.")
 
     def transcribe(samples, itn):
         if device == "mps":

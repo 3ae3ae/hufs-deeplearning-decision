@@ -38,7 +38,7 @@ public class VoiceCommands : MonoBehaviour
     public event Action<State> OnStateChanged;
     public event Action<string> OnError;
 
-    [Tooltip("이 RMS 이상이면 말소리로 판단합니다. 주변 소음보다 높게 조정하세요.")]
+    [Tooltip("이 RMS 이상이면 말소리로 판단합니다. 주변 소음보다 높게 조정하십시오.")]
     public float startLevel = 0.02f;
     [Tooltip("이 시간(초) 동안 조용하면 녹음을 끝냅니다.")]
     public float silenceSeconds = 1.2f;
@@ -46,7 +46,7 @@ public class VoiceCommands : MonoBehaviour
     public float maxSeconds = 30f;
     [Tooltip("말하기 직전의 소리를 이 시간(초)만큼 보관해 첫 음절을 지킵니다.")]
     public float preRollSeconds = 0.3f;
-    [Tooltip("현재 RMS를 초당 두 번 Console에 출력합니다. 말소리 기준 조정에 사용하세요.")]
+    [Tooltip("현재 RMS를 초당 두 번 Console에 출력합니다. 말소리 기준 조정에 사용하십시오.")]
     public bool logLevel = false;
 
     readonly Queue<float> preRoll = new Queue<float>();
@@ -188,7 +188,7 @@ public class VoiceCommands : MonoBehaviour
         {
             while (true)
             {
-                Debug.Log("음성 AI 설치 중… (처음 한 번, 몇 분 걸려요)");
+                Debug.Log("음성 AI 설치 중… (처음 한 번, 몇 분 걸립니다)");
                 await Task.Delay(30000, token);
             }
         }
@@ -322,14 +322,14 @@ public class VoiceCommands : MonoBehaviour
             float.IsInfinity(silenceSeconds + maxSeconds))
             throw new ArgumentException("RMS는 0~1, 무음·최대 시간은 양수, 사전 보관 시간은 최대 시간 미만이어야 합니다.");
         if (Microphone.devices.Length == 0)
-            throw new InvalidOperationException("사용 가능한 마이크가 없습니다. 마이크 연결과 권한을 확인하세요.");
+            throw new InvalidOperationException("사용 가능한 마이크가 없습니다. 마이크 연결과 권한을 확인하십시오.");
 
         int minRate, maxRate;
         Microphone.GetDeviceCaps(null, out minRate, out maxRate);
         int rate = minRate == 0 && maxRate == 0 ? 16000 : Math.Max(minRate, Math.Min(16000, maxRate));
         clip = Microphone.Start(null, true, 10, rate);
         if (clip == null)
-            throw new InvalidOperationException("마이크 녹음을 시작하지 못했습니다. 마이크 권한을 확인하세요.");
+            throw new InvalidOperationException("마이크 녹음을 시작하지 못했습니다. 마이크 권한을 확인하십시오.");
 
         sampleRate = clip.frequency;
         chunk = new float[Math.Max(1, sampleRate / 20)];
@@ -370,7 +370,7 @@ public class VoiceCommands : MonoBehaviour
                 Fail("마이크 위치를 읽지 못했습니다.");
                 yield break;
             }
-            // shortcut: 10초 이상 프레임이 멈추면 유실됩니다. 긴 정지가 필요하면 버퍼를 늘리세요.
+            // shortcut: 10초 이상 프레임이 멈추면 유실됩니다. 긴 정지가 필요하면 버퍼를 늘리십시오.
             int frames = (position - readPosition + clip.samples) % clip.samples;
             if (frames > 0)
             {

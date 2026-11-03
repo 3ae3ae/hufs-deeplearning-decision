@@ -47,12 +47,12 @@ def main():
     mic = sys.argv[1] if len(sys.argv) > 1 else ":1"  # 이 맥에서 확인한 마이크 번호
     device = sys.argv[2] if len(sys.argv) > 2 else "auto"
     if device not in server.DEVICES:
-        sys.exit(f"장치는 {', '.join(server.DEVICES)} 중 하나예요.")
+        sys.exit(f"장치는 {', '.join(server.DEVICES)} 중 하나여야 합니다.")
     print("모델 불러오는 중…", flush=True)
     models, lock = server.load_models("models/laya-commands", device), Lock()
     ffmpeg = subprocess.Popen(["ffmpeg", "-v", "error", "-f", "avfoundation", "-i", mic,
                                "-ac", "1", "-ar", str(RATE), "-f", "s16le", "pipe:1"], stdout=subprocess.PIPE)
-    print(f"준비됐어요 ({models[1].device.type}). 말해 보세요 (끝내려면 Ctrl+C)\n", flush=True)
+    print(f"준비되었습니다 ({models[1].device.type}). 말씀하십시오 (종료: Ctrl+C)\n", flush=True)
     try:
         for audio in utterances(ffmpeg.stdout):
             result = server.process_audio(audio, models, lock)

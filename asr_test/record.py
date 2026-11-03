@@ -26,4 +26,4 @@ for line in (here / "sentences.jsonl").read_text(encoding="utf-8").splitlines():
     subprocess.run(["ffmpeg", "-loglevel", "error", "-f", "avfoundation", "-i", mic,
                     "-ac", "1", "-ar", "16000", str(wav)], check=True)
 
-print("\n전부 녹음했어요.")
+print("\n모두 녹음했습니다.")

@@ -2,14 +2,14 @@ using UnityEngine;
 
 public class VoiceCommandsExample : MonoBehaviour
 {
-    [Tooltip("VoiceCommands가 붙은 오브젝트를 이 칸으로 드래그하세요.")]
+    [Tooltip("VoiceCommands가 붙은 오브젝트를 이 필드로 드래그하십시오.")]
     public VoiceCommands client;
 
     void OnEnable()
     {
         if (client == null)
         {
-            Debug.LogError("Inspector에서 VoiceCommands를 연결하세요.");
+            Debug.LogError("Inspector에서 VoiceCommands를 연결하십시오.");
             return;
         }
         client.OnCommands += HandleCommands;
