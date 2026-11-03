@@ -1,0 +1,33 @@
+{"id": "01", "asr": "빨강이 앞으로 두칸가", "commands": ["Select(\"red\")", "Move(\"Front\", 2)"]}
+{"id": "02", "asr": "블루 오른쪽으로 구십도 돌아", "commands": ["Select(\"blue\")", "Rotate(\"Right\", 90)"]}
+{"id": "03", "asr": "초록기 는 뒤 로 3 칸 이동 해 주세요", "commands": ["Select(\"green\")", "Move(\"Back\", 3)"]}
+{"id": "04", "asr": "레드 왼쪽으로 삼 미터 가죠", "commands": ["Select(\"red\")", "Move(\"Left\", 4)"]}
+{"id": "05", "asr": "파랑이 벽 부석", "commands": ["Select(\"blue\")", "Interact()"]}
+{"id": "06", "asr": "그린 반시개방 사십오 도 회전에", "commands": ["Select(\"green\")", "Rotate(\"Left\", 45)"]}
+{"id": "07", "asr": "앞으로 가", "commands": ["Move(\"Front\", -1)"]}
+{"id": "08", "asr": "오른쪽으로 돌아아", "commands": ["Rotate(\"Right\", -1)"]}
+{"id": "09", "asr": "뒤로 돌아", "commands": ["Rotate(\"Right\", 180)"]}
+{"id": "10", "asr": "처음부터 다시 할래", "commands": ["ResetGame()"]}
+{"id": "11", "asr": "게임 종료", "commands": ["ExitGame()"]}
+{"id": "12", "asr": "빨간 로봇 우측으로 열칸 이동해", "commands": ["Select(\"red\")", "Move(\"Right\", 10)"]}
+{"id": "13", "asr": "불루 시계방 삼십칠 도 돌려", "commands": ["Select(\"blue\")", "Rotate(\"Right\", 37)"]}
+{"id": "14", "asr": "초록기 후진 다섯걸음", "commands": ["Select(\"green\")", "Move(\"Back\", 5)"]}
+{"id": "15", "asr": "파란로 좌측으로 이 미터가", "commands": ["Select(\"blue\")", "Move(\"Left\", 2)"]}
+{"id": "16", "asr": "빨강이 는 앞 한 강 하고 오른쪽 으로 90 도 돌아", "commands": ["Select(\"red\")", "Move(\"Front\", 1)", "Rotate(\"Right\", 90)"]}
+{"id": "17", "asr": "블루 왼쪽으로 돌아 앞으로 세칸가", "commands": ["Select(\"blue\")", "Rotate(\"Left\", -1)", "Move(\"Front\", 3)"]}
+{"id": "18", "asr": "초록이 앞으로  독한 빨강이 뒤 로 한칸", "commands": ["Select(\"green\")", "Move(\"Front\", 2)", "Select(\"red\")", "Move(\"Back\", 1)"]}
+{"id": "19", "asr": "레드는 위로 색칸 가고 그리은 아래로 두칸가", "commands": ["Select(\"red\")", "Move(\"Front\", 3)", "Select(\"green\")", "Move(\"Back\", 2)"]}
+{"id": "20", "asr": "파랑이 앞으로 가서 벽 부서", "commands": ["Select(\"blue\")", "Move(\"Front\", -1)", "Interact()"]}
+{"id": "21", "asr": "빨강이 오른쪽으로 아니 왼쪽으로 두칸가", "commands": ["Select(\"red\")", "Move(\"Left\", 2)"]}
+{"id": "22", "asr": "블루 앞으로 세칸 아니다 네칸가", "commands": ["Select(\"blue\")", "Move(\"Front\", 4)"]}
+{"id": "23", "asr": "초록이 아 이 빨강이 뒤로 한칸가", "commands": ["Select(\"red\")", "Move(\"Back\", 1)"]}
+{"id": "24", "asr": "앞으로 두칸과 아삭한만 취소소 오른쪽으로 돌아", "commands": ["Rotate(\"Right\", -1)"]}
+{"id": "25", "asr": "블루 돌지 말고 그냥 아프 한칸만가", "commands": ["Select(\"blue\")", "Move(\"Front\", 1)"]}
+{"id": "26", "asr": "빨강이 는 오른쪽 으로 3 미터 가고 그 다음 에 블루 는 왼쪽 으로 30 도 돌아 아", "commands": ["Select(\"red\")", "Move(\"Right\", 3)", "Select(\"blue\")", "Rotate(\"Left\", 30)"]}
+{"id": "27", "asr": "빨강이는 오른쪽으로 3미터 가고 블루는 왼쪽으로 30도 돌아 그리고 앞으로 2미터 이동해 오른쪽으로 20도 돌아쪼록기는는 오른쪽으로 아니다 돌지 말고 위로 두칸만이 이동해 그리고 빨강이는 아래로 한 칸", "commands": ["Select(\"red\")", "Move(\"Right\", 3)", "Select(\"blue\")", "Rotate(\"Left\", 30)", "Move(\"Front\", 2)", "Rotate(\"Right\", 20)", "Select(\"green\")", "Move(\"Front\", 2)", "Select(\"red\")", "Move(\"Back\", 1)"]}
+{"id": "28", "asr": "아 그러니까 초록기가 앞으로 한칸 가서 벽 부수고 음 다시 뒤로 한칸 와", "commands": ["Select(\"green\")", "Move(\"Front\", 1)", "Interact()", "Move(\"Back\", 1)"]}
+{"id": "29", "asr": "블로 오른쪽 으로 180 도 돌고 앞으로 으로 5칸가 아 아니다 4 칸 그리고 빨강이 는 벽부석", "commands": ["Select(\"blue\")", "Rotate(\"Right\", 180)", "Move(\"Front\", 4)", "Select(\"red\")", "Interact()"]}
+{"id": "30", "asr": "빨강이 앞으로 가 아라 하지마", "commands": []}
+{"id": "31", "asr": "아 이거 어떡하지 잠깐 만나 생각 좀 해볼게", "commands": []}
+{"id": "32", "asr": "다 망했다 리셋", "commands": ["ResetGame()"]}
+{"id": "33", "asr": "오늘은 여기까지 할래 게임 꺼줘", "commands": ["ExitGame()"]}

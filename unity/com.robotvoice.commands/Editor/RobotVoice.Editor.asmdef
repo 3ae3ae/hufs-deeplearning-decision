@@ -1,0 +1,5 @@
+{
+  "name": "RobotVoice.Editor",
+  "references": ["RobotVoice"],
+  "includePlatforms": ["Editor"]
+}

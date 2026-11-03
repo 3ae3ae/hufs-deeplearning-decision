@@ -1,0 +1,33 @@
+{"id": "01", "text": "빨강이 앞으로 두 칸 가", "numbers": [2], "commands": ["Select(\"red\")", "Move(\"Front\", 2)"]}
+{"id": "02", "text": "블루, 오른쪽으로 구십 도 돌아", "numbers": [90], "commands": ["Select(\"blue\")", "Rotate(\"Right\", 90)"]}
+{"id": "03", "text": "초록이는 뒤로 세 칸 이동해 주세요", "numbers": [3], "commands": ["Select(\"green\")", "Move(\"Back\", 3)"]}
+{"id": "04", "text": "레드 왼쪽으로 사 미터 가 줘", "numbers": [4], "commands": ["Select(\"red\")", "Move(\"Left\", 4)"]}
+{"id": "05", "text": "파랑이 벽 부숴", "numbers": [], "commands": ["Select(\"blue\")", "Interact()"]}
+{"id": "06", "text": "그린, 반시계 방향으로 사십오 도 회전해", "numbers": [45], "commands": ["Select(\"green\")", "Rotate(\"Left\", 45)"]}
+{"id": "07", "text": "앞으로 가", "numbers": [], "commands": ["Move(\"Front\", -1)"]}
+{"id": "08", "text": "오른쪽으로 돌아", "numbers": [], "commands": ["Rotate(\"Right\", -1)"]}
+{"id": "09", "text": "뒤로 돌아", "numbers": [], "commands": ["Rotate(\"Right\", 180)"]}
+{"id": "10", "text": "처음부터 다시 할래", "numbers": [], "commands": ["ResetGame()"]}
+{"id": "11", "text": "게임 종료", "numbers": [], "commands": ["ExitGame()"]}
+{"id": "12", "text": "빨간 로봇 우측으로 열 칸 이동해", "numbers": [10], "commands": ["Select(\"red\")", "Move(\"Right\", 10)"]}
+{"id": "13", "text": "블루 시계 방향으로 삼십칠 도 돌려", "numbers": [37], "commands": ["Select(\"blue\")", "Rotate(\"Right\", 37)"]}
+{"id": "14", "text": "초록이 후진 다섯 걸음", "numbers": [5], "commands": ["Select(\"green\")", "Move(\"Back\", 5)"]}
+{"id": "15", "text": "파란 로봇 좌측으로 이 미터 가", "numbers": [2], "commands": ["Select(\"blue\")", "Move(\"Left\", 2)"]}
+{"id": "16", "text": "빨강이는 앞으로 한 칸 가고 오른쪽으로 구십 도 돌아", "numbers": [1, 90], "commands": ["Select(\"red\")", "Move(\"Front\", 1)", "Rotate(\"Right\", 90)"]}
+{"id": "17", "text": "블루 왼쪽으로 돌아 앞으로 세 칸 가", "numbers": [3], "commands": ["Select(\"blue\")", "Rotate(\"Left\", -1)", "Move(\"Front\", 3)"]}
+{"id": "18", "text": "초록이 앞으로 두 칸, 빨강이 뒤로 한 칸", "numbers": [2, 1], "commands": ["Select(\"green\")", "Move(\"Front\", 2)", "Select(\"red\")", "Move(\"Back\", 1)"]}
+{"id": "19", "text": "레드는 위로 세 칸 가고, 그린은 아래로 두 칸 가", "numbers": [3, 2], "commands": ["Select(\"red\")", "Move(\"Front\", 3)", "Select(\"green\")", "Move(\"Back\", 2)"]}
+{"id": "20", "text": "파랑이 앞으로 가서 벽 부숴", "numbers": [], "commands": ["Select(\"blue\")", "Move(\"Front\", -1)", "Interact()"]}
+{"id": "21", "text": "빨강이 오른쪽으로... 아니, 왼쪽으로 두 칸 가", "numbers": [2], "commands": ["Select(\"red\")", "Move(\"Left\", 2)"]}
+{"id": "22", "text": "블루 앞으로 세 칸, 아니다 네 칸 가", "numbers": [3, 4], "commands": ["Select(\"blue\")", "Move(\"Front\", 4)"]}
+{"id": "23", "text": "초록이, 아니 빨강이 뒤로 한 칸 가", "numbers": [1], "commands": ["Select(\"red\")", "Move(\"Back\", 1)"]}
+{"id": "24", "text": "앞으로 두 칸 가. 아 잠깐, 취소. 오른쪽으로 돌아", "numbers": [2], "commands": ["Rotate(\"Right\", -1)"]}
+{"id": "25", "text": "블루 돌지 말고 그냥 앞으로 한 칸만 가", "numbers": [1], "commands": ["Select(\"blue\")", "Move(\"Front\", 1)"]}
+{"id": "26", "text": "음... 빨강이는, 어... 오른쪽으로 삼 미터 가고, 그 다음에 블루는 왼쪽으로 삼십 도 돌아", "numbers": [3, 30], "commands": ["Select(\"red\")", "Move(\"Right\", 3)", "Select(\"blue\")", "Rotate(\"Left\", 30)"]}
+{"id": "27", "text": "빨강이는 오른쪽으로 삼 미터 가고, 블루는 왼쪽으로 삼십 도 돌아. 그리고 앞으로 이 미터 이동해. 오른쪽으로 이십 도 돌아. 초록이는 오른쪽으로... 아니다, 돌지 말고 위로 두 칸만 이동해. 그러고 빨강이는 아래로 한 칸.", "numbers": [3, 30, 2, 20, 2, 1], "commands": ["Select(\"red\")", "Move(\"Right\", 3)", "Select(\"blue\")", "Rotate(\"Left\", 30)", "Move(\"Front\", 2)", "Rotate(\"Right\", 20)", "Select(\"green\")", "Move(\"Front\", 2)", "Select(\"red\")", "Move(\"Back\", 1)"]}
+{"id": "28", "text": "어... 그러니까 초록이가 앞으로 한 칸 가서 벽 부수고, 음... 다시 뒤로 한 칸 와", "numbers": [1, 1], "commands": ["Select(\"green\")", "Move(\"Front\", 1)", "Interact()", "Move(\"Back\", 1)"]}
+{"id": "29", "text": "블루 오른쪽으로 백팔십 도 돌고 앞으로 다섯 칸 가. 아 아니다, 네 칸. 그리고 빨강이는 벽 부숴", "numbers": [180, 5, 4], "commands": ["Select(\"blue\")", "Rotate(\"Right\", 180)", "Move(\"Front\", 4)", "Select(\"red\")", "Interact()"]}
+{"id": "30", "text": "빨강이 앞으로 가. 아니다, 가지 마", "numbers": [], "commands": []}
+{"id": "31", "text": "아 이거 어떻게 하지... 잠깐만 생각 좀 해 볼게", "numbers": [], "commands": []}
+{"id": "32", "text": "다 망했다. 리셋", "numbers": [], "commands": ["ResetGame()"]}
+{"id": "33", "text": "오늘은 여기까지 할게. 게임 꺼 줘", "numbers": [], "commands": ["ExitGame()"]}

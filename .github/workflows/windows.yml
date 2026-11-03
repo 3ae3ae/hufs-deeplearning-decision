@@ -1,0 +1,95 @@
+name: Windows CPU
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.2
+        with:
+          version: "0.13.6"
+          python-version: "3.12"
+          enable-cache: false
+      - name: Install dependencies
+        run: uv sync --frozen
+      - name: Check torch backend
+        run: |
+          uv run python -c "import torch, torchaudio; from server import choose_device; print('torch:', torch.__version__, 'torchaudio:', torchaudio.__version__, 'CUDA build:', torch.version.cuda, 'cuda_available:', torch.cuda.is_available(), 'auto_device:', choose_device('auto')); assert torch.version.cuda == '12.6'; assert torch.cuda.is_available() or choose_device('auto') == 'cpu'"
+      - name: Pipeline tests
+        run: uv run python test_pipeline.py
+      - name: Server tests
+        run: |
+          New-Item -ItemType Directory -Force asr_test/recordings | Out-Null
+          Copy-Item ci/tts/01.wav asr_test/recordings/01.wav
+          uv run python test_server.py
+      - name: Download model
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download model-v3 --pattern laya-commands.zip --repo $env:GITHUB_REPOSITORY
+          Expand-Archive laya-commands.zip -DestinationPath models
+      - name: Evaluate TTS
+        id: eval
+        run: uv run python asr_test/eval_audio.py --model models/laya-commands --audio-dir ci/tts --device cpu --json out.json
+      - name: Compare commands
+        shell: uv run python {0}
+        run: |
+          import json
+          from pathlib import Path
+          expected = json.loads(Path("ci/expected.json").read_text(encoding="utf-8"))
+          actual = json.loads(Path("out.json").read_text(encoding="utf-8"))
+          different = []
+          for key in sorted(expected.keys() | actual.keys()):
+              want, got = expected.get(key), actual.get(key)
+              if want != got:
+                  print(f"{key}: Mac={want} Windows={got}")
+              if want is None or got is None or want["raw"] != got["raw"]:
+                  different.append(key)
+          print(f"raw matches: {len(expected) - len(different)}/{len(expected)}")
+          assert not different, f"Different command ids: {different}"
+      - name: Server smoke
+        if: success() || steps.eval.outcome == 'success'
+        shell: uv run python {0}
+        run: |
+          import json, subprocess, sys, time, urllib.request
+          from pathlib import Path
+          sys.path.insert(0, str(Path.cwd()))
+          from server import command_object
+          with Path("server.log").open("w", encoding="utf-8") as log:
+              server = subprocess.Popen(["uv", "run", "python", "server.py", "--model", "models/laya-commands"], stdout=log, stderr=subprocess.STDOUT)
+              try:
+                  for _ in range(240):
+                      assert server.poll() is None, Path("server.log").read_text(encoding="utf-8")
+                      try:
+                          with urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=2) as response:
+                              assert response.status == 200 and json.load(response) == {"ok": True}
+                          break
+                      except OSError:
+                          time.sleep(1)
+                  else:
+                      raise RuntimeError("Server readiness timed out")
+                  request = urllib.request.Request("http://127.0.0.1:8000/command", data=Path("ci/tts/01.wav").read_bytes(), headers={"Content-Type": "audio/wav"})
+                  with urllib.request.urlopen(request, timeout=60) as response:
+                      assert response.status == 200
+                      result = json.load(response)
+                  expected = json.loads(Path("ci/expected.json").read_text(encoding="utf-8"))["01"]["raw"]
+                  assert result["raw"] == expected, result
+                  assert result["commands"] == [command_object(command) for command in expected], result
+                  print(json.dumps(result, ensure_ascii=False))
+              finally:
+                  subprocess.run(["taskkill", "/PID", str(server.pid), "/T", "/F"], check=False)
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: windows-results
+          path: |
+            out.json
+            server.log
