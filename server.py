@@ -22,6 +22,17 @@ MAX_SECONDS = 60
 DEVICES = ("auto", "cpu", "mps", "cuda")
 
 
+# 인식기는 "오버"를 "오브"로 적기도 하고, 실제 발음은 "오바"인 경우가 많다. 띄어쓰기를 빼먹으므로("돌아오버") 앞뒤 경계는 보지 않는다. '오버' 뒤는 다음 말의 시작이거나 잡음이라 버린다
+OVER = re.compile("오[버브바]")
+
+
+def split_over(text):
+    match = OVER.search(text)
+    if match is None:
+        return text, False
+    return re.sub(r"[\s.,?!…]+$", "", text[:match.start()]), True
+
+
 class BadAudio(ValueError):
     pass
 
@@ -94,7 +105,7 @@ def command_object(command):
     return {"op": op, **dict(zip(fields[op], json.loads("[" + arguments + "]"), strict=True))}
 
 
-def process_audio(audio, models, lock):
+def process_audio(audio, models, lock, partial=False):
     began = perf_counter()
     samples = decode_audio(audio)
     asr, agent = models
@@ -103,8 +114,13 @@ def process_audio(audio, models, lock):
         start_asr = perf_counter()
         result = asr.generate(input=samples, cache={}, language="ko", use_itn=False)
         text = re.sub(r"<\|.*?\|>", "", result[0]["text"]).strip()
+        text, over = split_over(text)
         synchronize(agent.device.type)
         end_asr = perf_counter()
+        if partial and not over:
+            return {"text": text, "over": False, "commands": [], "raw": [],
+                    "ms": {"asr": round((end_asr - start_asr) * 1000, 2), "decide": 0,
+                           "total": round((end_asr - began) * 1000, 2)}}
         windows = pipeline.windows(pipeline.normalize_numbers(text))
         predictions = agent.predict_batch([state for _, state in windows], pipeline.QUESTIONS, batch_size=4)
         segments = [(segment, *(prediction["answers"][q]["choice"] for q in ("robot", "action", "direction")))
@@ -113,7 +129,7 @@ def process_audio(audio, models, lock):
         commands = [command_object(command) for command in raw]
         synchronize(agent.device.type)
         end = perf_counter()
-    return {"text": text, "commands": commands, "raw": raw,
+    return {"text": text, "over": over, "commands": commands, "raw": raw,
             "ms": {"asr": round((end_asr - start_asr) * 1000, 2),
                    "decide": round((end - end_asr) * 1000, 2), "total": round((end - began) * 1000, 2)}}
 
@@ -131,7 +147,7 @@ class Handler(BaseHTTPRequestHandler):
         self.reply(200, {"ok": True}) if self.path == "/health" else self.reply(404, {"error": "Not found"})
 
     def do_POST(self):
-        if self.path != "/command":
+        if self.path not in ("/command", "/listen"):
             self.reply(404, {"error": "Not found"})
             return
         try:
@@ -151,7 +167,8 @@ class Handler(BaseHTTPRequestHandler):
                 raise BadAudio("오디오 본문 수신 시간 초과") from exc
             if len(audio) != length:
                 raise BadAudio("오디오 본문이 Content-Length보다 짧습니다.")
-            result = process_audio(audio, self.server.models, self.server.model_lock)
+            # /listen: 녹음 중간에 '오버'가 나왔는지 본다. 나왔을 때만 명령까지 만든다
+            result = process_audio(audio, self.server.models, self.server.model_lock, partial=self.path == "/listen")
         except BadAudio as exc:
             self.reply(400, {"error": str(exc)})
         except Exception as exc:

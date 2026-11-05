@@ -5,7 +5,7 @@
 플레이어가 한국어로 말한 명령을 로봇 명령 목록으로 변환하는 Unity 패키지입니다.
 
 ## 설치
-**Window → Package Manager → + → Add package from tarball…**에서 `com.robotvoice.commands-0.1.1.tgz`를 선택하십시오.
+**Window → Package Manager → + → Add package from tarball…**에서 `com.robotvoice.commands-0.2.0.tgz`를 선택하십시오.
 예시 스크립트는 Package Manager에서 이 패키지 → **Samples → Example → Import**로 가져올 수 있습니다.
 
 **첫 Play 때 음성 AI를 한 번 자동으로 설치합니다.** 인터넷 연결이 필요하며 10분 안팎이 걸립니다(Console에 "음성 AI 설치 중…"이 표시됩니다). 이후에는 수십 초 안에 준비됩니다. 시연 PC에서는 미리 한 번 Play해 두십시오.
@@ -35,7 +35,9 @@ void Handle(VoiceResult result)
 }
 ```
 
-Play를 누르고 말하십시오. 말을 멈추고 **1.2초 동안 조용하면** 명령이 전달됩니다. 생각하는 동안에는 "음…" 하고 소리를 이어 주십시오.
+Play를 누르고 말한 뒤 끝에 **"오버"**라고 말하십시오(예: "빨강이 앞으로 두 칸 가, 오버"). "오버"가 들리면 바로 명령이 전달됩니다.
+**조용해져도 명령은 전달되지 않습니다.** 생각하느라 오래 멈춰도 녹음은 이어지며, 말 사이의 긴 무음은 잘라 냅니다. "오버" 뒤에 이어서 한 말은 버려집니다.
+"오버" 없이 한 말(혼잣말, 잡담)도 녹음에 남아 다음 "오버" 때 함께 해석됩니다. 명령이 아닌 말은 대부분 무시되지만, 로봇 이름이 섞이면 선택된 로봇이 바뀔 수 있습니다. 녹음은 최근 30초까지만 남습니다.
 
 ## 명령
 `result.commands`를 순서대로 실행하면 됩니다. `result.text`는 인식한 문장입니다.
@@ -54,10 +56,11 @@ Play를 누르고 말하십시오. 말을 멈추고 **1.2초 동안 조용하면
 
 ## 상태와 오류
 - `OnStateChanged`: `Starting`(준비 중) → `Waiting`(대기) → `Recording`(듣는 중) → `Processing`(처리 중). 화면에 "듣는 중…" 같은 표시를 할 때 사용하십시오.
+  `Recording`은 "오버"가 들릴 때까지 이어집니다. 조용해져도 `Waiting`으로 돌아가지 않습니다.
 - `OnError`: 문제가 생기면 메시지가 전달됩니다. 음성 AI 준비에 실패하면 `%LOCALAPPDATA%\RobotVoice\ai.log` 파일에 원인이 기록됩니다.
 
 ## 말소리 감지가 잘 되지 않을 때
-Inspector에서 `Log Level`을 켜면 Console에 소리 크기가 출력됩니다. 조용할 때보다 높고 말할 때보다 낮게 `Start Level`(기본 0.02)을 조정하십시오. 말이 너무 빨리 끊기면 `Silence Seconds`를 늘리십시오.
+Inspector에서 `Log Level`을 켜면 Console에 소리 크기가 출력됩니다. 조용할 때보다 높고 말할 때보다 낮게 `Start Level`(기본 0.02)을 조정하십시오. "오버"라고 말해도 명령이 전달되지 않으면 "오버"를 또렷하게 말하십시오. 작게 말한 소리가 무음으로 잘려 나가는 경우에는 `Start Level`을 낮추십시오.
 
 ## 주의
 - **Player Settings → Scripting Backend는 Mono(기본값)**로 두십시오. IL2CPP에서는 동작하지 않습니다.

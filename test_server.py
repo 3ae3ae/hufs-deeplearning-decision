@@ -11,6 +11,18 @@ from unittest.mock import patch
 import server
 
 
+for text, expected in (
+    ("빨강이 앞으로 두칸가 오버", ("빨강이 앞으로 두칸가", True)),
+    ("빨강이 가오버 파랑이", ("빨강이 가", True)),
+    ("파랑이 돌아오브", ("파랑이 돌아", True)),
+    ("빨강이 가 오바", ("빨강이 가", True)),
+    ("빨강이 가.", ("빨강이 가.", False)),
+    ("오버", ("", True)),
+    ("빨강이 가.,?!… 오버 오버", ("빨강이 가", True)),
+):
+    assert server.split_over(text) == expected
+
+
 def wav_bytes(samples, rate=16000, channels=1, width=2):
     buffer = io.BytesIO()
     with wave.open(buffer, "wb") as wav:
@@ -56,6 +68,12 @@ def transcribe(**kwargs):
     return [{"text": "<|ko|><|NEUTRAL|>빨강이 앞으로 두칸가<|Speech|>"}]
 
 
+def transcribe_over(**kwargs):
+    result = transcribe(**kwargs)
+    result[0]["text"] = "<|ko|>빨강이 앞으로 두칸가 오버<|Speech|>"
+    return result
+
+
 def decide(states, questions, batch_size):
     assert lock.locked() and questions == server.pipeline.QUESTIONS and batch_size == 4
     assert states == ["⟦빨강이⟧ 앞으로 2칸가", "빨강이 ⟦앞으로 2칸가⟧"]
@@ -68,9 +86,21 @@ models = (SimpleNamespace(generate=transcribe),
           SimpleNamespace(predict_batch=decide, device=SimpleNamespace(type="cpu")))
 result = server.process_audio(audio, models, lock)
 assert result["text"] == "빨강이 앞으로 두칸가"
+assert result["over"] is False
 assert result["raw"] == ['Select("red")', 'Move("Front", 2)']
 assert result["commands"] == [{"op": "Select", "id": "red"}, {"op": "Move", "direction": "Front", "amount": 2}]
 assert set(result["ms"]) == {"asr", "decide", "total"} and all(t >= 0 for t in result["ms"].values())
+with patch.object(models[1], "predict_batch") as predict:
+    partial = server.process_audio(audio, models, lock, partial=True)
+    predict.assert_not_called()
+assert partial["text"] == result["text"] and partial["over"] is False
+assert partial["commands"] == partial["raw"] == [] and partial["ms"]["decide"] == 0
+assert set(partial["ms"]) == {"asr", "decide", "total"} and all(t >= 0 for t in partial["ms"].values())
+with patch.object(models[0], "generate", side_effect=transcribe_over):
+    for partial in (False, True):
+        heard = server.process_audio(audio, models, lock, partial=partial)
+        assert heard["over"] is True and heard["text"] == result["text"]
+        assert heard["commands"] == result["commands"] and heard["raw"] == result["raw"]
 for raw, expected in [
     ('Rotate("Left", 30)', {"op": "Rotate", "way": "Left", "amount": 30}),
     ('Move("Back", -1)', {"op": "Move", "direction": "Back", "amount": -1}),
@@ -107,6 +137,13 @@ with ThreadingHTTPServer(("127.0.0.1", 0), server.Handler) as http:
         assert request("GET", "/health") == (200, {"ok": True})
         status, body = request("POST", "/command", audio)
         assert status == 200 and body["commands"] == result["commands"]
+        assert body["over"] is False
+        status, body = request("POST", "/listen", audio)
+        assert status == 200 and body["over"] is False and body["commands"] == []
+        with patch.object(models[0], "generate", side_effect=transcribe_over):
+            status, body = request("POST", "/listen", audio)
+            assert status == 200 and body["over"] is True and body["commands"] == result["commands"]
+        assert request("POST", "/listen", b"not audio")[0] == 400
         assert request("POST", "/command", b"not audio")[0] == 400
         assert request("POST", "/command", buffer.getvalue())[0] == 400
         assert request("POST", "/command", b"", {"Content-Length": str(server.MAX_BYTES + 1)})[0] == 400
@@ -114,6 +151,7 @@ with ThreadingHTTPServer(("127.0.0.1", 0), server.Handler) as http:
         assert request("GET", "/missing")[0] == request("POST", "/missing")[0] == 404
         with patch.object(server, "process_audio", side_effect=RuntimeError("model failed")):
             assert request("POST", "/command", audio) == (500, {"error": "model failed"})
+            assert request("POST", "/listen", audio) == (500, {"error": "model failed"})
     finally:
         http.shutdown()
         thread.join()

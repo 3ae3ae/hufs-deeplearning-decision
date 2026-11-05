@@ -40,9 +40,9 @@ public class VoiceCommands : MonoBehaviour
 
     [Tooltip("이 RMS 이상이면 말소리로 판단합니다. 주변 소음보다 높게 조정하십시오.")]
     public float startLevel = 0.02f;
-    [Tooltip("이 시간(초) 동안 조용하면 녹음을 끝냅니다.")]
+    [Tooltip("말 사이의 무음은 이 시간(초)까지만 남기고 잘라 냅니다. 무음으로는 녹음이 끝나지 않습니다.")]
     public float silenceSeconds = 1.2f;
-    [Tooltip("한 번에 녹음할 최대 시간(초)입니다. 말하기 전 보관한 소리도 포함합니다.")]
+    [Tooltip("녹음에 남겨 둘 최대 시간(초)입니다. 넘으면 오래된 소리부터 지웁니다. 말하기 전 보관한 소리도 포함합니다.")]
     public float maxSeconds = 30f;
     [Tooltip("말하기 직전의 소리를 이 시간(초)만큼 보관해 첫 음절을 지킵니다.")]
     public float preRollSeconds = 0.3f;
@@ -52,7 +52,8 @@ public class VoiceCommands : MonoBehaviour
     readonly Queue<float> preRoll = new Queue<float>();
     readonly List<float> recording = new List<float>();
     AudioClip clip;
-    const string AiAddress = "http://127.0.0.1:8000";
+    // 0.1.x(무음 방식)의 음성 AI가 8000번 포트에 남아 있어도 섞이지 않게 다른 포트를 씁니다.
+    const string AiAddress = "http://127.0.0.1:8001";
     static readonly string Home = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RobotVoice");
     static readonly string LogPath = Path.Combine(Home, "ai.log");
     static readonly SemaphoreSlim SetupLock = new SemaphoreSlim(1, 1);
@@ -64,11 +65,14 @@ public class VoiceCommands : MonoBehaviour
     CancellationTokenSource lifetime;
 
     float[] chunk;
-    int sampleRate, readPosition, chunkCount, preRollSamples, maxSamples, lastLoudSample;
+    int sampleRate, readPosition, chunkCount, preRollSamples, maxSamples, lastLoudSample, unsent;
     float nextLogTime, noiseLevel = -1f;
 
     [Serializable]
     class Health { public bool ok; }
+
+    [Serializable]
+    class Heard { public string text; public VoiceCommand[] commands; public bool over; }
 
     async void OnEnable()
     {
@@ -149,7 +153,7 @@ public class VoiceCommands : MonoBehaviour
                 if (ownedProcess != null) ownedProcess.Dispose();
                 ownedProcess = null;
                 // shortcut: 프로세스 실행은 데스크톱 Mono 전용입니다. IL2CPP 지원 시 네이티브 실행기가 필요합니다.
-                ownedProcess = StartProcess(Python, "server.py --model models/laya-commands", folder, out _);
+                ownedProcess = StartProcess(Python, "server.py --model models/laya-commands --port 8001", folder, out _);
                 // 에디터에서는 다음 Play 때 바로 쓰도록 AI를 남깁니다.
 #if !UNITY_EDITOR
                 Application.quitting -= StopAI;
@@ -412,7 +416,8 @@ public class VoiceCommands : MonoBehaviour
         if (CurrentState == State.Processing) return;
 
         bool loud = rms >= startLevel;
-        if (CurrentState == State.Waiting)
+        bool startRecognition = CurrentState == State.Waiting;
+        if (startRecognition)
         {
             if (!loud)
             {
@@ -423,48 +428,72 @@ public class VoiceCommands : MonoBehaviour
             }
             recording.AddRange(preRoll);
             preRoll.Clear();
+            unsent = 0;
             SetState(State.Recording);
             if (!isActiveAndEnabled) return;
         }
 
-        int count = Math.Min(chunk.Length, maxSamples - recording.Count);
-        for (int i = 0; i < count; i++) recording.Add(chunk[i]);
         // 말하는 중에는 방 잡음의 2배만 넘어도 계속 말하는 것으로 봅니다: 작게 말한 "아 아니다"에서 끊기지 않게
-        if (rms >= Math.Min(startLevel, Math.Max(2f * Math.Max(noiseLevel, 0f), 0.003f))) lastLoudSample = recording.Count;
-        if (recording.Count < maxSamples &&
-            recording.Count - lastLoudSample < silenceSeconds * sampleRate) return;
-
-        byte[] wav = EncodeWav();
-        recording.Clear();
-        SetState(State.Processing);
-        if (isActiveAndEnabled) Send(wav);
+        bool speaking = rms >= Math.Min(startLevel, Math.Max(2f * Math.Max(noiseLevel, 0f), 0.003f));
+        if (!speaking && recording.Count - lastLoudSample >= silenceSeconds * sampleRate) return;
+        recording.AddRange(chunk);
+        unsent += chunk.Length;
+        if (speaking) lastLoudSample = recording.Count;
+        if (recording.Count > maxSamples)
+        {
+            int overflow = recording.Count - maxSamples;
+            recording.RemoveRange(0, overflow);
+            lastLoudSample -= overflow;
+        }
+        if (startRecognition && isActiveAndEnabled) Recognize();
     }
 
-    async void Send(byte[] wav)
+    async void Recognize()
     {
+        const double interval = 0.3;
         CancellationToken token = lifetime.Token;
         VoiceResult result = null;
         string error = null, body = "", reason = "";
         int status = 0;
         try
         {
-            using (var content = new ByteArrayContent(wav))
+            // SenseVoice는 스트리밍 모델이 아니므로, 녹음 중인 소리 전체를 짧은 간격으로 다시 인식해 '오버'를 찾습니다.
+            while (true)
             {
-                content.Headers.ContentType = new MediaTypeHeaderValue("audio/wav");
-                using (var response = await Http.PostAsync(AiAddress + "/command", content, token))
+                var watch = Stopwatch.StartNew();
+                if (unsent > 0)
                 {
-                    status = (int)response.StatusCode;
-                    reason = response.ReasonPhrase;
-                    body = await response.Content.ReadAsStringAsync();
-                    token.ThrowIfCancellationRequested();
-                    if (status != 200) throw new HttpRequestException("음성 명령 처리 실패");
-                    result = JsonUtility.FromJson<VoiceResult>(body);
-                    if (result == null || result.text == null || result.commands == null)
-                        throw new FormatException("응답에 text 또는 commands가 없습니다.");
-                    foreach (VoiceCommand command in result.commands)
-                        if (command == null || string.IsNullOrEmpty(command.op))
-                            throw new FormatException("응답에 유효하지 않은 명령이 있습니다.");
+                    unsent = 0;
+                    status = 0;
+                    body = reason = "";
+                    Heard heard;
+                    using (var content = new ByteArrayContent(EncodeWav()))
+                    {
+                        content.Headers.ContentType = new MediaTypeHeaderValue("audio/wav");
+                        using (var response = await Http.PostAsync(AiAddress + "/listen", content, token))
+                        {
+                            status = (int)response.StatusCode;
+                            reason = response.ReasonPhrase;
+                            body = await response.Content.ReadAsStringAsync();
+                            token.ThrowIfCancellationRequested();
+                            if (status != 200) throw new HttpRequestException("음성 명령 처리 실패");
+                            heard = JsonUtility.FromJson<Heard>(body);
+                            if (heard == null || heard.text == null || heard.commands == null)
+                                throw new FormatException("응답에 text 또는 commands가 없습니다.");
+                            foreach (VoiceCommand command in heard.commands)
+                                if (command == null || string.IsNullOrEmpty(command.op))
+                                    throw new FormatException("응답에 유효하지 않은 명령이 있습니다.");
+                        }
+                    }
+                    if (heard.over)
+                    {
+                        SetState(State.Processing);
+                        result = new VoiceResult { text = heard.text, commands = heard.commands };
+                        break;
+                    }
                 }
+                int delay = (int)Math.Ceiling((interval - watch.Elapsed.TotalSeconds) * 1000);
+                if (delay > 0) await Task.Delay(delay, token);
             }
         }
         catch (Exception exception)
@@ -477,12 +506,13 @@ public class VoiceCommands : MonoBehaviour
         try
         {
             if (error != null) OnError?.Invoke("음성 명령을 처리하지 못했습니다.\n로그: " + LogPath);
-            else OnCommands?.Invoke(result);
+            else if (result != null) OnCommands?.Invoke(result);
         }
         finally
         {
             if (!token.IsCancellationRequested && isActiveAndEnabled)
             {
+                recording.Clear();
                 // 처리 중 들어온 소리와 미완성 청크가 다음 명령에 섞이지 않게 합니다.
                 readPosition = Microphone.GetPosition(null);
                 chunkCount = 0;

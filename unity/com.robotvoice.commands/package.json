@@ -1,6 +1,6 @@
 {
   "name": "com.robotvoice.commands",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "displayName": "Robot Voice Commands",
   "unity": "2021.3",
   "description": "플레이어의 한국어 음성 명령을 로봇 명령 목록으로 바꿔 줍니다.",
