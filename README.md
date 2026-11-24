@@ -4,16 +4,17 @@
 
 플레이어의 한국어 음성을 로봇 명령 목록으로 변환합니다.
 
-이 브랜치(`over-keyword`, Unity 패키지 0.2.0)는 말 끝에 **"오버"**라고 하면 바로 변환하는 버전입니다. 1.2초 동안 조용하면 변환하는 버전은 `main` 브랜치(Unity 패키지 0.1.1)에 있습니다.
+이 브랜치(`over-keyword`, Unity 패키지 0.2.0부터)는 말 끝에 **"오버"**라고 하면 바로 변환하는 버전입니다. 1.2초 동안 조용하면 변환하는 버전은 `main` 브랜치(Unity 패키지 0.1.1)에 있습니다.
 
 ```
 음성 → SenseVoice(음성인식) → "오버" 확인 → 숫자 변환·조각 나누기 → Laya(조각마다 로봇/행동/방향) → 명령 목록
 ```
 SenseVoice는 스트리밍 모델이 아니므로, 녹음하는 동안 지금까지의 소리 전체를 0.3초 간격으로 다시 인식해 "오버"를 찾습니다. "오버"가 나오기 전까지는 음성인식만 하고, "오버"가 나오면 그 앞의 문장만 명령으로 변환합니다. 조용해져도 변환하지 않으며, 말 사이의 긴 무음은 잘라 낸 채 "오버"가 나올 때까지 계속 듣습니다.
+"게임 시작"(`StartGame`)과 "튜토리얼"(`Tutorial`)은 Laya가 배우지 않은 명령이라, 조각에 이 말이 있으면 Laya의 답 대신 이 명령을 씁니다(0.3.0).
 
 ## Unity 패키지 만들기
 ```sh
-uv run python build_unity_package.py   # → dist/com.robotvoice.commands-0.2.0.tgz (약 600MB)
+uv run python build_unity_package.py   # → dist/com.robotvoice.commands-0.3.0.tgz (약 600MB)
 ```
 Unity에서 *Add package from tarball*로 이 파일 하나만 설치하면 됩니다. 사용법은 패키지 안의 `README.md`(`unity/com.robotvoice.commands/README.md`)에 있습니다.
 패키지는 첫 Play 때 uv, Python, 필요한 라이브러리(Windows는 GPU용), 음성인식 모델을 `%LOCALAPPDATA%\RobotVoice`에 설치하고, 이후 AI를 백그라운드에서 실행합니다. 설치 기록은 같은 폴더의 `ai.log`에 남습니다.
@@ -39,3 +40,4 @@ uv run make_data.py                                                 # 학습 데
 - 28/33은 이 33문장의 오류를 보고 개선한 결과입니다. 새로 녹음한 문장으로 다시 평가해야 합니다.
 - GPU 없이 Windows CPU로만 실행하면 몇 초씩 걸릴 수 있습니다. CPU에서는 음성인식 한 번에 0.5~0.7초가 걸려 "오버"를 늦게 알아챕니다.
 - "오버" 인식은 TTS 음성으로만 시험했습니다. 실제 목소리로 다시 확인해야 합니다.
+- `StartGame`은 "게임 시작"이라고 말해야 합니다. "시작"이나 "시작하자"만 말하면 Laya가 `Interact`로 읽습니다.

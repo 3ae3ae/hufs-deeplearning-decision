@@ -5,7 +5,7 @@
 플레이어가 한국어로 말한 명령을 로봇 명령 목록으로 변환하는 Unity 패키지입니다.
 
 ## 설치
-**Window → Package Manager → + → Add package from tarball…**에서 `com.robotvoice.commands-0.2.0.tgz`를 선택하십시오.
+**Window → Package Manager → + → Add package from tarball…**에서 `com.robotvoice.commands-0.3.0.tgz`를 선택하십시오.
 예시 스크립트는 Package Manager에서 이 패키지 → **Samples → Example → Import**로 가져올 수 있습니다.
 
 **첫 Play 때 음성 AI를 한 번 자동으로 설치합니다.** 인터넷 연결이 필요하며 10분 안팎이 걸립니다(Console에 "음성 AI 설치 중…"이 표시됩니다). 이후에는 수십 초 안에 준비됩니다. 시연 PC에서는 미리 한 번 Play해 두십시오.
@@ -29,7 +29,7 @@ void Handle(VoiceResult result)
         {
             case "Select": /* command.id 로봇 선택 */ break;
             case "Move":   /* command.direction 으로 command.amount 만큼 이동 */ break;
-            // Rotate, Interact, ResetGame, ExitGame
+            // Rotate, Interact, ResetGame, ExitGame, StartGame, Tutorial
         }
     }
 }
@@ -50,9 +50,13 @@ Play를 누르고 말한 뒤 끝에 **"오버"**라고 말하십시오(예: "빨
 | `Interact` | | 벽 부수기 |
 | `ResetGame` | | 퍼즐 초기화 |
 | `ExitGame` | | 게임 종료 |
+| `StartGame` | | 게임 시작 ("게임 시작") |
+| `Tutorial` | | 튜토리얼 펼치기·접기 ("튜토리얼", "튜토리얼 켜 줘", "튜토리얼 꺼 줘" 등) |
 
 - `amount`가 **-1**이면 숫자를 말하지 않은 것입니다. 기본값은 게임에서 정하십시오.
 - `Select`는 로봇이 바뀔 때만 전달됩니다. 처음부터 로봇 이름이 없으면 현재 선택된 로봇에 적용하십시오.
+- `Tutorial`은 켜기와 끄기를 구분하지 않습니다. 받을 때마다 튜토리얼을 펼치거나 접으십시오.
+- `StartGame`과 `Tutorial`은 어느 화면에서 말해도 전달됩니다. `StartGame`은 로비에서만, `Tutorial`은 게임 중에만 처리하십시오.
 
 ## 상태와 오류
 - `OnStateChanged`: `Starting`(준비 중) → `Waiting`(대기) → `Recording`(듣는 중) → `Processing`(처리 중). 화면에 "듣는 중…" 같은 표시를 할 때 사용하십시오.

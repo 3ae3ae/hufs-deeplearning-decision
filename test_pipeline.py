@@ -158,5 +158,17 @@ assert assemble([
     ("5칸에서 4칸 가", "none", "Move", "none"),
 ]) == ['Move("Front", 4)']
 assert assemble([]) == []
+# Laya가 "게임 시작"을 ExitGame으로, "튜토리얼 꺼 줘"를 ExitGame/Interact로 읽어도 글자로 바로잡는다
+assert assemble([("게임 시작", "none", "ExitGame", "none")]) == ["StartGame()"]
+assert assemble([("게임시장", "none", "none", "none")]) == ["StartGame()"]
+assert assemble([("게임 다시 시작해", "none", "ResetGame", "none")]) == ["ResetGame()"]
+assert assemble([
+    ("빨강이", "red", "none", "none"),
+    ("앞으로 2칸 가고", "none", "Move", "Front"),
+    ("튜토리얼 꺼 줘", "none", "ExitGame", "none"),
+    ("초록이", "green", "none", "none"),
+    ("벽 부숴", "none", "Interact", "none"),
+]) == ['Select("red")', 'Move("Front", 2)', "Tutorial()", 'Select("green")', "Interact()"]
+assert assemble([("튜토리얼", "none", "none", "none")]) == ["Tutorial()"]
 
 print("pipeline tests passed")

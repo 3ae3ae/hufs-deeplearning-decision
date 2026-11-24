@@ -16,6 +16,10 @@ for text, expected in (
     ("빨강이 가오버 파랑이", ("빨강이 가", True)),
     ("파랑이 돌아오브", ("파랑이 돌아", True)),
     ("빨강이 가 오바", ("빨강이 가", True)),
+    ("게임 시작5법", ("게임 시작", True)),
+    ("게임 시작 5버", ("게임 시작", True)),
+    ("튜토리얼 좀 껴줄래 우버", ("튜토리얼 좀 껴줄래", True)),
+    ("오른쪽으로 5칸 가", ("오른쪽으로 5칸 가", False)),
     ("빨강이 가.", ("빨강이 가.", False)),
     ("오버", ("", True)),
     ("빨강이 가.,?!… 오버 오버", ("빨강이 가", True)),
@@ -105,6 +109,7 @@ for raw, expected in [
     ('Rotate("Left", 30)', {"op": "Rotate", "way": "Left", "amount": 30}),
     ('Move("Back", -1)', {"op": "Move", "direction": "Back", "amount": -1}),
     ("Interact()", {"op": "Interact"}), ("ResetGame()", {"op": "ResetGame"}), ("ExitGame()", {"op": "ExitGame"}),
+    ("StartGame()", {"op": "StartGame"}), ("Tutorial()", {"op": "Tutorial"}),
 ]:
     assert server.command_object(raw) == expected
 for invalid in (b"", b"not audio", b"x" * (server.MAX_BYTES + 1)):

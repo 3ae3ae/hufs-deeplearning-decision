@@ -22,8 +22,9 @@ MAX_SECONDS = 60
 DEVICES = ("auto", "cpu", "mps", "cuda")
 
 
-# 인식기는 "오버"를 "오브"로 적기도 하고, 실제 발음은 "오바"인 경우가 많다. 띄어쓰기를 빼먹으므로("돌아오버") 앞뒤 경계는 보지 않는다. '오버' 뒤는 다음 말의 시작이거나 잡음이라 버린다
-OVER = re.compile("오[버브바]")
+# 인식기는 "오버"를 "오브"로 적기도 하고, 실제 발음은 "오바"인 경우가 많다. "시작 오버"처럼 앞말과 이어지면 "5버", "오법", "우버"로도 적는다.
+# 띄어쓰기를 빼먹으므로("돌아오버") 앞뒤 경계는 보지 않는다. '오버' 뒤는 다음 말의 시작이거나 잡음이라 버린다
+OVER = re.compile("오[버브바법]|[우5] ?[버법]")
 
 
 def split_over(text):
@@ -100,7 +101,7 @@ def decode_audio(audio):
 
 def command_object(command):
     fields = {"Select": ("id",), "Move": ("direction", "amount"), "Rotate": ("way", "amount"),
-              "Interact": (), "ResetGame": (), "ExitGame": ()}
+              "Interact": (), "ResetGame": (), "ExitGame": (), "StartGame": (), "Tutorial": ()}
     op, arguments = command[:-1].split("(", 1)
     return {"op": op, **dict(zip(fields[op], json.loads("[" + arguments + "]"), strict=True))}
 

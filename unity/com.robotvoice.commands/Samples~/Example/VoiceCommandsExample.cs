@@ -56,6 +56,14 @@ public class VoiceCommandsExample : MonoBehaviour
                     // 여기서 게임을 종료합니다.
                     Debug.Log("게임 종료");
                     break;
+                case "StartGame":
+                    // 로비에서 게임을 시작합니다. 로비가 아니면 무시하십시오.
+                    Debug.Log("게임 시작");
+                    break;
+                case "Tutorial":
+                    // 튜토리얼을 펼치거나 접습니다(토글).
+                    Debug.Log("튜토리얼 전환");
+                    break;
             }
         }
     }

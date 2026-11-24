@@ -98,11 +98,19 @@ def _amount(text: str, action: str):
     return found[-1] if found else None
 
 
+# Laya는 이 두 명령을 배우지 않았다(선택지만 늘리면 기존 명령까지 틀린다). 정해진 말이라 글자로 찾는다. "게임시장"은 인식 실수형
+_TUTORIAL, _START = re.compile("튜토리"), re.compile("게임 ?시[작장]")
+
+
 def assemble(segments) -> list[str]:
     commands = []
     current = selected = None
     previous = ""  # 바로 앞 조각이 명령 없는 조각이면 그 글: "오른쪽으로 3칸 | 가"처럼 숫자만 떨어진 경우
     for text, robot, action, direction in segments:
+        if _TUTORIAL.search(text):
+            action = "Tutorial"
+        elif _START.search(text):
+            action = "StartGame"
         if robot != "none":
             current = robot
         if action == "none":
@@ -113,7 +121,7 @@ def assemble(segments) -> list[str]:
             amount = _amount(previous, action)
         amount = -1 if amount is None else amount
         previous = ""
-        if action in {"ResetGame", "ExitGame"}:
+        if action in {"ResetGame", "ExitGame", "StartGame", "Tutorial"}:
             commands.append(f"{action}()")
             continue
         if current is not None and current != selected:

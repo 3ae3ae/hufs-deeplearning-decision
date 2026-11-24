@@ -84,7 +84,8 @@ jobs:
                   assert result["raw"] == expected, result
                   assert result["commands"] == [command_object(command) for command in expected], result
                   print(json.dumps(result, ensure_ascii=False))
-                  for wav, over, raw in (("ci/tts/01.wav", False, []), ("ci/over.wav", True, ['Select("red")', 'Move("Front", 2)'])):
+                  for wav, over, raw in (("ci/tts/01.wav", False, []), ("ci/over.wav", True, ['Select("red")', 'Move("Front", 2)']),
+                                        ("ci/start.wav", True, ["StartGame()"]), ("ci/tutorial.wav", True, ["Tutorial()"])):
                       request = urllib.request.Request("http://127.0.0.1:8000/listen", data=Path(wav).read_bytes(), headers={"Content-Type": "audio/wav"})
                       with urllib.request.urlopen(request, timeout=60) as response:
                           result = json.load(response)
